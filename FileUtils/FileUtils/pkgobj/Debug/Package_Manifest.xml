@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Solution xmlns="http://schemas.microsoft.com/sharepoint/" SolutionId="99ac4f57-6386-4e82-a4fc-79a5d22e4acb" SharePointProductVersion="19.0">
+  <Assemblies>
+    <Assembly Location="itext.io.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="itext.kernel.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="itext.layout.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="BouncyCastle.Crypto.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="Common.Logging.Core.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="Common.Logging.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="Newtonsoft.Json.dll" DeploymentTarget="GlobalAssemblyCache" />
+    <Assembly Location="FileUtils.dll" DeploymentTarget="GlobalAssemblyCache" />
+  </Assemblies>
+  <RootFiles>
+    <RootFile Location="ISAPI\FileUtils\Services.svc" />
+  </RootFiles>
+</Solution>

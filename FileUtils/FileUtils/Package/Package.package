@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.0.0.0" Id="99ac4f57-6386-4e82-a4fc-79a5d22e4acb" solutionId="99ac4f57-6386-4e82-a4fc-79a5d22e4acb" resetWebServer="false" sharePointProductVersion="19.0" name="FileUtils" xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel">
+  <assemblies>
+    <customAssembly location="Common.Logging.Core.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="bin\Debug\Common.Logging.Core.dll" />
+    <customAssembly location="Common.Logging.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="bin\Debug\Common.Logging.dll" />
+    <customAssembly location="Newtonsoft.Json.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll" />
+    <customAssembly location="itextsharp.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="packages\iTextSharp.5.5.10\lib\itextsharp.dll" />
+  </assemblies>
+  <projectItems>
+    <projectItemReference itemId="235052a9-b937-40c1-83bc-bb18b2368944" />
+  </projectItems>
+</package>

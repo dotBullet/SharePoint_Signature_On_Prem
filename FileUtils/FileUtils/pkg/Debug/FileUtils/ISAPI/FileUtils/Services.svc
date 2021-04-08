@@ -1,0 +1,4 @@
+﻿<%@ServiceHost Language="C#" 
+    Factory="Microsoft.SharePoint.Client.Services.MultipleBaseAddressDataServiceHostFactory, Microsoft.SharePoint.Client.ServerRuntime, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" 
+    Service="FileUtils.Code.FileUtilsService,FileUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5f654844c5466c20"
+    %>
