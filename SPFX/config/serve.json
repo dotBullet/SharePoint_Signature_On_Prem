@@ -1,0 +1,29 @@
+{
+  "$schema": "http://developer.microsoft.com/json-schemas/core-build/serve.schema.json",
+  "port": 4321,
+  "https": false,
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "http://sps2019/sites/Test/Test1DocumentLibrary/Forms/AllItems.aspx",
+      "customActions": {
+        "03991a62-72c3-4fed-b86d-237c79db6399": {
+          "location": "ClientSideExtension.ListViewCommandSet.CommandBar",
+          "properties": {
+            "sampleTextOne": "One item is selected in the list"
+          }
+        }
+      }
+    },
+    "helloWorld": {
+      "pageUrl": "http://sps2019/sites/Test/Test1DocumentLibrary/Forms/AllItems.aspx",
+      "customActions": {
+        "03991a62-72c3-4fed-b86d-237c79db6399": {
+          "location": "ClientSideExtension.ListViewCommandSet.CommandBar",
+          "properties": {
+            "sampleTextOne": "One item is selected in the list"
+          }
+        }
+      }
+    }
+  }
+}
