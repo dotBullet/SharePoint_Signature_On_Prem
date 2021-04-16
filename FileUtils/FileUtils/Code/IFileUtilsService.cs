@@ -17,7 +17,9 @@ namespace FileUtils.Code
         Stream SignPDF(string fileID, string listID, string webID, string siteID, string code);
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/GetAccessToken/{code}")]
         Stream GetAccessToken(string code);
-      
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/GetCodeForSign/{credentials}/{hashPDF}/{accessToken}")]
+        Stream GetCodeForSign(string credentials, string hashPDF, string accessToken);
+
 
     }
 }

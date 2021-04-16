@@ -45,14 +45,8 @@ namespace FileUtils.Code
             return result;
         }
 
-
         public Stream SignPDF(string fileID, string listID, string webID, string siteID, string access_token)
         {
-            //access_token ---> primesc din partea de cookie
-            //apelul de serviciu pentru a primi ala
-            //trimit access_token sa primesc credentialID
-            //fac hash la .pdf 
-            
             var outputStream = new MemoryStream();
             string listName = string.Empty;
             string filename = "result.pdf";
@@ -69,10 +63,35 @@ namespace FileUtils.Code
 
                         SPListItem selectedItem = listFiles.GetItemById(Int32.Parse(fileID));
                         Stream inputStream = new MemoryStream(selectedItem.File.OpenBinary());
-                        SHA256 sha = SHA256.Create();
-                        // credential id, sad ...
-                        //hash ul fisierului
-                        //
+
+                        var resultCredentials = CallWebServiceAceessToken(access_token).GetAwaiter().GetResult();
+
+                        //var credentials = JsonConvert.DeserializeObject<object>(resultCredentials);
+
+                        JObject o = JObject.Parse(resultCredentials);
+                        string raspuns = o.Properties().First().Name.ToString();
+
+                        if (raspuns != "credentialIDs")
+                        {
+                            return serializeResponse(
+                            new
+                            {
+                                //operation failed
+                                Result = OperationResult.Error,
+                                //tratare eroare credentiale + cum vine 
+                                Message = $"Eroare obtine credentiale! {o.Properties().First().Value.ToString()}",
+                                ExecutingUser = string.Empty
+                            }
+                            );
+                        }
+
+                        string credentials = o.Properties().First().Value.First.ToString();
+                        string hashHard = "c1RPZ3dPbSs0NzRnRmowcTB4MWlTTnNwS3FiY3NlNEllaXFsRGcvSFd1ST0=";
+                        GetCodeForSign(credentials, hashHard, access_token);
+
+
+                        //do get request
+
                         return serializeResponse(
                             new
                             {
@@ -83,11 +102,10 @@ namespace FileUtils.Code
                             }
                             );
 
-
                     }
                     catch (Exception xcp)
                     {
-                        
+
                         return serializeResponse(
                           new
                           {
@@ -102,7 +120,46 @@ namespace FileUtils.Code
             }
 
         }
+        public Stream GetCodeForSign(string credentials, string hashPDF, string acces_token)
+        {
+            //response() ptc c# - nu poti citi raspunsul direct ca la js sau orice limbaj normal
+            //getrespomse() iti da un obiect de tip response, din care poti lua mesaj-ul (care te intereseaza pe tine) sau headere
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://msign-test.transsped.ro/csc/v0/oauth2/authorize?response_type=code&client_id=msdiverse&redirect_uri=http://localhost:8080/&scope=credential&credentialID={credentials}&numSignatures=1&hash={hashPDF}");
+                HttpClient client = new HttpClient();
+                request.Method = "GET";
+                request.KeepAlive = true;
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", acces_token);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                string myResponse = "";
+                using (System.IO.StreamReader sr = new System.IO.StreamReader(response.GetResponseStream()))
+                {
+                    return serializeResponse(
+                        new
+                        {
+                            //operation success
+                            Result = OperationResult.Success,
+                            myResponse = sr.ReadToEnd()
+                        });
+                    //Response.Write(myResponse);
+
+                }
+            }
+            catch (Exception xcp)
+            {
+                return serializeResponse(
+                  new
+                  {
+                      Result = OperationResult.Error,
+                      Message = $"Eroare la primirea credentialelor / hash-ului: {xcp.Message}",
+                      ExecutingUser = string.Empty
+                  });
+            }
+        }
 
         public Stream GetAccessToken(string code)
         {
@@ -111,27 +168,78 @@ namespace FileUtils.Code
             new
             {
                 Result = OperationResult.Success,
-                Message = $"{result}"          
-        }
+                Message = $"{result}"
+
+            }
              );
         }
-           
-        
 
+        //GET https://msign-test.transsped.ro/csc/v0/oauth2/authorize??response_type=code&client_id=msdiverse
+        //&redirect_uri=http://localhost:8080/&scope=credential&credentialID=50C6F99ED2DC3139D038B34CD89B75CA763E3748
+        //&numSignatures=1&hash=AAdfOD9XTm6dexOB2-ogenqosNO7ny9Sny85HKfD-X4
+        /*
+        public async Task<string> GetAsync(string uri)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-        //tot o functie async pentru credentials
-        // client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
-        
+            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
+
+        public async Task<string> PostAsync(string uri, string data, string contentType, string method = "POST")
+        {
+            byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            request.ContentLength = dataBytes.Length;
+            request.ContentType = contentType;
+            request.Method = method;
+
+            using (Stream requestBody = request.GetRequestStream())
+            {
+                await requestBody.WriteAsync(dataBytes, 0, dataBytes.Length);
+            }
+
+            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
+        */
+
+        public async Task<string> CallWebServiceAceessToken(string accessToken)
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                var response = await client.PostAsync("https://msign-test.transsped.ro/csc/v0/credentials/list", null);
+
+                var responsestring = await response.Content.ReadAsStringAsync();
+                return responsestring;
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+        }
+
         public async Task<string> CallWebService(string code)
         {
-            try { 
-            HttpClient client = new HttpClient();
-                // servicepointmanager.securityprotocol = securityprotocoltype.ssl3 | securityprotocoltype.tls | securityprotocoltype.tls11 | securityprotocoltype.tls12;
-                //client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
-                //client.DefaultRequestHeaders.Add("Content-Type", "application/json");
-                //var bytearray = Encoding.ASCII.GetBytes("0771107346:asdfmovie2020@");
-                //client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("basic", convert.tobase64string(bytearray));
-                //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            try
+            {
+                HttpClient client = new HttpClient();
 
                 client.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json; charset=utf-8");
 
@@ -144,7 +252,7 @@ namespace FileUtils.Code
                     redirect_uri = "http://localhost:8080/"
                 };
 
-            var myContent = JsonConvert.SerializeObject(data);
+                var myContent = JsonConvert.SerializeObject(data);
 
                 var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
                 var byteContent = new ByteArrayContent(buffer);
@@ -152,34 +260,107 @@ namespace FileUtils.Code
                 byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 var response = await client.PostAsync("https://msign-test.transsped.ro/csc/v0/oauth2/token", byteContent);
-      
-            var responsestring = await response.Content.ReadAsStringAsync();
-           // Console.WriteLine(responsestring);
-            return responsestring;
-                //parsare json
+                var responsestring = await response.Content.ReadAsStringAsync();
+
+                return responsestring;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return e.Message;
             }
-
         }
 
-       
-
-        public enum OperationResult
+        public async Task<string> GetAsync(string uri)
         {
-            Success,
-            Warning,
-            Error
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+            using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return await reader.ReadToEndAsync();
+            }
         }
-        public enum EventType
-        {
-            Info,
-            Warning,
-            Error
 
+
+
+
+        public string Oauth2AuthorizeParam(string response_type, string client_id, string redirect_uri, string scope, string state,
+            string lang, string credentialID, string numSignatures, List<string> hashesList)
+        {
+
+            char[] padding = { '=' };
+            string requestBody = "https://msign-test.transsped.ro/csc/v0/oauth2/authorize?";
+
+            if (response_type == "")
+            {
+                throw new Exception("response_type parameter can't be empty!");
+            }
+            requestBody = requestBody + "response_type=" + response_type;
+
+            if (client_id == "")
+            {
+                throw new Exception("client_id parameter can't be empty!");
+            }
+            requestBody = requestBody + "&client_id=" + client_id;
+
+            if (redirect_uri != "")
+            {
+                requestBody = requestBody + "&redirect_uri=" + redirect_uri;
+            }
+
+            if (scope != "")
+            {
+                requestBody = requestBody + "&scope=" + scope;
+            }
+
+            if (state != "")
+            {
+                requestBody = requestBody + "&state=" + state;
+            }
+
+            if (lang != "")
+            {
+                requestBody = requestBody + "&lang=" + lang;
+            }
+
+            if (credentialID != "")
+            {
+                requestBody = requestBody + "&credentialID=" + credentialID;
+            }
+
+            if (numSignatures != "")
+            {
+                requestBody = requestBody + "&numSignatures=" + numSignatures;
+            }
+
+            if (hashesList != null)
+            {
+                for (int i = 0; i < hashesList.Count; i++)
+                {
+                    requestBody = requestBody + "&hash=" + hashesList[i].TrimEnd(padding).Replace('+', '-').Replace('/', '_');
+                }
+            }
+            return requestBody;
         }
 
     }
+
+    public enum OperationResult
+    {
+        Success,
+        Warning,
+        Error
+    }
+    public enum EventType
+    {
+        Info,
+        Warning,
+        Error
+
+    }
+
 }
+
+

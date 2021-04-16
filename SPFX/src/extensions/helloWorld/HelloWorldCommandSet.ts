@@ -100,7 +100,7 @@ export default class HelloWorldCommandSet extends BaseListViewCommandSet<IHelloW
 
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
         
-          fetch(`/_vti_bin/FileUtils/Services.svc/SignPDF/${row.getValueByName("ID")}/${this.context.pageContext.list.id}/${this.context.pageContext.web.id}/${this.context.pageContext.site.id}/${this.getCookie("access_token")}`, {
+          fetch(`/_vti_bin/FileUtils/Services.svc/SignPDF/${row.getValueByName("ID")}/${this.context.pageContext.list.id}/${this.context.pageContext.web.id}/${this.context.pageContext.site.id}/${this.getCookie("token")}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -114,11 +114,11 @@ export default class HelloWorldCommandSet extends BaseListViewCommandSet<IHelloW
           .then(function (data) {
             var r: WCFResponse = data;
             //alert(r.Message);
-            
+            console.log(data.Message);
             //success or warning
-            if (r.Result < 2) { setTimeout(function () { window.location.reload() }, 1000) };
+            //if (r.Result < 2) { setTimeout(function () { window.location.reload() }, 1000) };
           }).catch(function (error) {
-           alert("Eroare serviciu web!");
+           alert("Eroare serviciu web! -- Access Token");
           });
 
         try {
