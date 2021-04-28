@@ -15,12 +15,6 @@ import {
 
 } from 'office-ui-fabric-react';
 
-//require('../../../node_modules/@fontawesome/fontawesome-free/css/all.min.css');
-//require('../../../node_modules/bootstrap/dist/css/bootstrap.min.css');
-//require('../../node_modules/bootoast/dist/bootoast.min.css');
-//require('../../node_modules/bootstrap/dist/css/bootstrap.min.css');
-//var bootoast: any = require('../../../node_modules/bootoast/dist/bootoast.min.js');
-
 interface WCFResponse {
   [key: string]: any
 }
@@ -29,7 +23,8 @@ export interface IRSSPWebPartState {
   token: string,
   error_message: string,
   error_desc: string,
-  initial: boolean
+  initial: boolean,
+  isSAD: boolean
 
 }
 
@@ -73,71 +68,149 @@ export default class AccessToken extends React.Component<IAccessTokenProps, IRSS
 
   private getAccessToken() {
     var queryParameters = new UrlQueryParameterCollection(window.location.href);
+    var querryCode = queryParameters.getValue('code');
 
-    if (this.getCookie("access_token") == "") {
-      console.log("before fetch");
-      let that = this;
-      fetch(`/_vti_bin/FileUtils/Services.svc/GetAccessToken/${queryParameters.getValue('code')}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        }
-      })
-        .then(res => {
-          return res.json()
-        }
-        ).then(function (data) {
-          var r: WCFResponse = data;
-          var rssp = JSON.parse(r.Message);
-          console.log(rssp);
-          //dupa apelul serviciului web se salveaza token=ul, data generarii si durata de viata in cookie dar si in stare
+    if (querryCode.toString().indexOf('SAD') == 0) {
 
-          if (rssp.error != undefined && rssp.error != null && rssp.error != "") {
-            that.setState({
-              token: "",
-              ttl: 0,
-              error_message: rssp.error,
-              error_desc: rssp.error_description,
-              initial: false
+      this.setState({
+      isSAD: true
+      });
 
-            });
+      var stateID = queryParameters.getValue('state');
+      var id = stateID.substring(stateID.lastIndexOf(';') + 1);
+      
+      console.log(id);
+      var hash = stateID.substring(0, stateID.lastIndexOf(';'));
+      console.log(hash);
+      if (this.getCookie("access_token") == "") {
+        //console.log("before fetch");
+        let that = this;
+        fetch(`/_vti_bin/FileUtils/Services.svc/SignPDF/${this.getCookie("token")}/${hash}/${id}/${querryCode}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
           }
-          else {
-            console.log("setarea: " + rssp.accsess_token);
-            that.setCookie("token", rssp.access_token, rssp.expires_in);//se iau valorile din raspunsul serv web - token si probabil 3600
-            that.setCookie("ttl", rssp.expires_in, rssp.expires_in);//3600 la ambele, sau ce vine din serviciul web
-            that.setCookie("creationDate", new Date(), rssp.expires_in);//3600 in loc de 10
-            console.log("cookie setat: " + rssp.accsess_token);
-            //acelasi token si durata de viata ca mai sus se salveaza in React state si e folosita mai jos de messagebar
-            that.setState({
-              token: rssp.access_token,
-              ttl: rssp.expires_in,
-              error_message: "",
-              error_desc: "",
-              initial: false
-
-            });
+        })
+          .then(res => {
+            return res.json()
           }
+          ).then(function (data) {
+            var r: WCFResponse = data;
+            var rssp = JSON.parse(r.Message);
+            console.log(rssp);
+            //dupa apelul serviciului web se salveaza token=ul, data generarii si durata de viata in cookie dar si in stare
 
-          //se face un interval care la 5 secunde actualizeaza informatia dein webpart
+            if (rssp.error != undefined && rssp.error != null && rssp.error != "") {
+              that.setState({
+                token: "",
+                ttl: 0,
+                error_message: rssp.error,
+                error_desc: rssp.error_description,
+                initial: false
 
-          if (r.Result > 0)
-            that.setState({
-              token: "",
-              ttl: 0,
-              error_message: r.Message,
-              error_desc: r.Message,
-              initial: false
+              });
+            }
+            else {
+              console.log("setarea: " + rssp.accsess_token);
+              that.setCookie("token", rssp.access_token, rssp.expires_in);//se iau valorile din raspunsul serv web - token si probabil 3600
+              that.setCookie("ttl", rssp.expires_in, rssp.expires_in);//3600 la ambele, sau ce vine din serviciul web
+              that.setCookie("creationDate", new Date(), rssp.expires_in);//3600 in loc de 10
+              console.log("cookie setat: " + rssp.accsess_token);
+              //acelasi token si durata de viata ca mai sus se salveaza in React state si e folosita mai jos de messagebar
+              that.setState({
+                token: rssp.access_token,
+                ttl: rssp.expires_in,
+                error_message: "",
+                error_desc: "",
+                initial: false
 
-            });
+              });
+            }
+            //se face un interval care la 5 secunde actualizeaza informatia dein webpart
 
-        }).catch(function (error) {
+            if (r.Result > 0)
+              that.setState({
+                token: "",
+                ttl: 0,
+                error_message: r.Message,
+                error_desc: r.Message,
+                initial: false
+              });
 
-          console.log("Eroare serviciu web!: " + error);
+          }).catch(function (error) {
+            console.log("Eroare serviciu web!: " + error);
+          });
+      }
+    } else {
 
-        });
+      if (this.getCookie("access_token") == "") {
+        //console.log("before fetch");
+        let that = this;
+        fetch(`/_vti_bin/FileUtils/Services.svc/GetAccessToken/${querryCode}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+            
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          }
+        })
+          .then(res => {
+            return res.json()
+          }
+          ).then(function (data) {
+            var r: WCFResponse = data;
+            var rssp = JSON.parse(r.Message);
+            console.log(rssp);
+            //dupa apelul serviciului web se salveaza token=ul, data generarii si durata de viata in cookie dar si in stare
+
+            if (rssp.error != undefined && rssp.error != null && rssp.error != "") {
+              that.setState({
+                token: "",
+                ttl: 0,
+                error_message: rssp.error,
+                error_desc: rssp.error_description,
+                initial: false
+
+              });
+            }
+            else {
+              console.log("setarea: " + rssp.accsess_token);
+              that.setCookie("token", rssp.access_token, rssp.expires_in);//se iau valorile din raspunsul serv web - token si probabil 3600
+              that.setCookie("ttl", rssp.expires_in, rssp.expires_in);//3600 la ambele, sau ce vine din serviciul web
+              that.setCookie("creationDate", new Date(), rssp.expires_in);//3600 in loc de 10
+              console.log("cookie setat: " + rssp.accsess_token);
+              //acelasi token si durata de viata ca mai sus se salveaza in React state si e folosita mai jos de messagebar
+              that.setState({
+                token: rssp.access_token,
+                ttl: rssp.expires_in,
+                error_message: "",
+                error_desc: "",
+                initial: false
+
+              });
+            }
+
+            //se face un interval care la 5 secunde actualizeaza informatia dein webpart
+
+            if (r.Result > 0)
+              that.setState({
+                token: "",
+                ttl: 0,
+                error_message: r.Message,
+                error_desc: r.Message,
+                initial: false
+
+              });
+
+          }).catch(function (error) {
+
+            console.log("Eroare serviciu web!: " + error);
+
+          });
+      }
     }
   }
 
@@ -171,13 +244,14 @@ export default class AccessToken extends React.Component<IAccessTokenProps, IRSS
     this.state = {
       token: "",
       ttl: 0,
-      error_message: "Se verifica existenta si se incearca obtinerea token-ului.",
-      error_desc: "Se incearca in 3 secunde.",
-      initial: true
+      error_message: "Va rugam asteptati!",
+      error_desc: "...",
+      initial: true,
+      isSAD: false
     };
 
     setInterval(this.updateState, 5000);
-    setTimeout(this.getAccessToken, 3000);
+    this.getAccessToken();
   }
 
 
@@ -190,10 +264,10 @@ export default class AccessToken extends React.Component<IAccessTokenProps, IRSS
       console.log(exception);
     }
     return (
-
+ 
       <div className={styles.accessToken} >
         <div className={styles.container}>
-          {this.state.error_message == "" &&
+          {this.state.error_message == "" && this.state.isSAD == false &&
             <MessageBar isMultiline={true}
               messageBarType={this.state.token != "" ? (this.state.ttl < 10 ? MessageBarType.warning : MessageBarType.success) : MessageBarType.error}>
               {this.state.token != "" && <div>Token-ul:<b> {this.state.token}</b> va expira in <b>{this.state.ttl}</b> secunde</div>}
@@ -203,7 +277,7 @@ export default class AccessToken extends React.Component<IAccessTokenProps, IRSS
               }} text="Obtinere token nou"></PrimaryButton></div>}
             </MessageBar>
           }
-          {this.state.error_message != "" &&
+          {this.state.error_message != "" && this.state.isSAD == false &&
             <MessageBar isMultiline={true}
               messageBarType={this.state.initial ? MessageBarType.info : MessageBarType.error}>
               {this.state.error_message}<br />
@@ -214,10 +288,16 @@ export default class AccessToken extends React.Component<IAccessTokenProps, IRSS
               }} text="Obtinere token nou"></PrimaryButton></div>}
             </MessageBar>
           }
+          {this.state.isSAD == true  &&
+            <MessageBar isMultiline={true}
+              messageBarType={MessageBarType.info}>
+                {this.state.error_message}<br />
+            </MessageBar> 
+          }
 
         </div>
       </div>
-
+        
     );
   }
 }

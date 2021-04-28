@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\FileUtils",
+    "\\FileUtils\\FileUtils",
+    "\\FileUtils\\FileUtils\\Code"
   ],
-  "SelectedNode": "\\FileUtils.sln",
+  "SelectedNode": "\\FileUtils\\FileUtils\\Code\\FileUtilsService.cs",
   "PreviewInSolutionExplorer": false
 }

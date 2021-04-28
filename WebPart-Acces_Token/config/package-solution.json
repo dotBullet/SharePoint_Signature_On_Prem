@@ -3,7 +3,7 @@
   "solution": {
     "name": "web-part-acces-token-client-side-solution",
     "id": "d7ef1016-9c81-4276-b29c-fbd54bea0fe9",
-    "version": "1.0.0.19",
+    "version": "1.0.0.26",
     "includeClientSideAssets": true
   },
   "paths": {

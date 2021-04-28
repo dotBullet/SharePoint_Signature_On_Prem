@@ -13,12 +13,14 @@ namespace FileUtils.Code
     public interface IFileUtilsService
     {
 
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/SignPDF/{fileID}/{listID}/{webID}/{siteID}/{code}")]
-        Stream SignPDF(string fileID, string listID, string webID, string siteID, string code);
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/SignPDF/{bearer}/{hash}/{id}/{SAD}")]
+        Stream SignPDF(string bearer, string hash, string id, string SAD);
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/GetAccessToken/{code}")]
         Stream GetAccessToken(string code);
-        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/GetCodeForSign/{credentials}/{hashPDF}/{accessToken}")]
-        Stream GetCodeForSign(string credentials, string hashPDF, string accessToken);
+        [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.WrappedRequest, UriTemplate = "/GetHashPDF/{idFile}")]
+        Stream GetHashPDF(string idFile);
+
+
 
 
     }

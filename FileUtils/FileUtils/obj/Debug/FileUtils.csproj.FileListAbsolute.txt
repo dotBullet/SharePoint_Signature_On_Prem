@@ -219,7 +219,6 @@ C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\bin\Debug
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\bin\Debug\Microsoft.Office.Server.Search.Connector.xml
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\bin\Debug\Microsoft.Office.DocumentManagement.xml
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\bin\Debug\Microsoft.Office.Policy.xml
-C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\obj\Debug\FileUtils.csprojAssemblyReference.cache
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\obj\Debug\FileUtils.csproj.CoreCompileInputs.cache
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\obj\Debug\FileUtils.csproj.CopyComplete
 C:\Users\mariusmoroiu98\Desktop\SharePoint_On_Prem\FileUtils\FileUtils\obj\Debug\FileUtils.dll

@@ -1,5 +1,5 @@
 import { override } from '@microsoft/decorators';
-import {  UrlQueryParameterCollection } from '@microsoft/sp-core-library';
+import { UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 import { SPComponentLoader } from '@microsoft/sp-loader';
 declare var SP: any;
 
@@ -23,9 +23,9 @@ import {
 } from 'office-ui-fabric-react';
 
 export interface IRSSPWebPartState {
-  ttl:number,
-  token:string
- }
+  ttl: number,
+  token: string
+}
 
 export interface IHelloWorldCommandSetProperties {
   // This is an example; replace with your own properties
@@ -77,8 +77,6 @@ export default class HelloWorldCommandSet extends BaseListViewCommandSet<IHelloW
       }
     }
   }
-///get si set coockie
-//trimit access_token sa 
 
 
   @override
@@ -89,44 +87,48 @@ export default class HelloWorldCommandSet extends BaseListViewCommandSet<IHelloW
       compareOneCommand.visible = event.selectedRows.length === 1;
     }
   }
-//butonul de semnare
+  //butonul de semnare
 
   @override
   public onExecute(event: IListViewCommandSetExecuteEventParameters): void {
-    
     let row = event.selectedRows[0];
     switch (event.itemId) {
       case 'COMMAND_1':
-
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
-        
-          fetch(`/_vti_bin/FileUtils/Services.svc/SignPDF/${row.getValueByName("ID")}/${this.context.pageContext.list.id}/${this.context.pageContext.web.id}/${this.context.pageContext.site.id}/${this.getCookie("token")}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-              // 'Content-Type': 'application/x-www-form-urlencoded',
-            }
-          })
+        let idFile = row.getValueByName("ID");
+        let hash = "";
+        fetch(`/_vti_bin/FileUtils/Services.svc/GetHashPDF/${idFile}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          }
+        })
           .then(res => {
             return res.json()
           })
           .then(function (data) {
             var r: WCFResponse = data;
             //alert(r.Message);
-            console.log(data.Message);
+            if (data.Result != 0)
+              console.log("Eroare generare Hash: " + data.Message);
+            else {
+              hash = data.Message;
+              console.log(data.Result);
+              window.open("https://msign-test.transsped.ro/csc/v0/oauth2/authorize?response_type=code&client_id=msdiverse&redirect_uri=http://localhost:8080/&scope=credential&credentialID=A122E0EFAF8C75AE0B3091183E9641AAD70C97DF&numSignatures=1&hash=" + hash + "&state="+ hash +";" + idFile, "_blank");
+            }
             //success or warning
             //if (r.Result < 2) { setTimeout(function () { window.location.reload() }, 1000) };
           }).catch(function (error) {
-           alert("Eroare serviciu web! -- Access Token");
+            alert("Eroare serviciu web! -- Hash");
           });
 
         try {
         } catch (exception) {
           console.log(exception);
         }
-        break;
-
+        return;
 
       default:
         throw new Error('Unknown command');
